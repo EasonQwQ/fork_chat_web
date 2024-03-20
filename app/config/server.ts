@@ -33,6 +33,13 @@ declare global {
 
       // google tag manager
       GTM_ID?: string;
+
+      /** custom cdn origin */
+      CDN_ORIGIN: string;
+      /** custom cdn url */
+      CDN_URL: string;
+      /** custom base url */
+      CUSTOM_BASE_URL: string;
     }
   }
 }
@@ -75,7 +82,7 @@ export const getServerSideConfig = () => {
   const randomIndex = Math.floor(Math.random() * apiKeys.length);
   const apiKey = apiKeys[randomIndex];
   console.log(
-    `[Server Config] using ${randomIndex + 1} of ${apiKeys.length} api key`,
+    `[Server Con1fig] using ${randomIndex + 1} of ${apiKeys.length} api key`,
   );
 
   return {
@@ -106,5 +113,8 @@ export const getServerSideConfig = () => {
     hideBalanceQuery: !process.env.ENABLE_BALANCE_QUERY,
     disableFastLink: !!process.env.DISABLE_FAST_LINK,
     customModels,
+    cdnOrigin: process.env.CDN_ORIGIN,
+    cdnUrl: process.env.CDN_URL,
+    customBaseURL: process.env.CUSTOM_BASE_URL,
   };
 };

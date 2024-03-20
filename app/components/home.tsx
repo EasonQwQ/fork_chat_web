@@ -127,6 +127,7 @@ function Screen() {
   const location = useLocation();
   const isHome = location.pathname === Path.Home;
   const isAuth = location.pathname === Path.Auth;
+  console.log("🚀 ~ Screen ~ isAuth:", isAuth);
   const isMobileScreen = useMobileScreen();
   const shouldTightBorder =
     getClientConfig()?.isApp || (config.tightBorder && !isMobileScreen);

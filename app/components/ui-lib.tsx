@@ -14,6 +14,7 @@ import Locale from "../locales";
 
 import { createRoot } from "react-dom/client";
 import React, { HTMLProps, useEffect, useState } from "react";
+import { JSX } from "react";
 import { IconButton } from "./button";
 
 export function Popover(props: {
@@ -120,41 +121,52 @@ export function Modal(props: ModalProps) {
 
   const [isMax, setMax] = useState(!!props.defaultMax);
 
-  return (
-    <div
-      className={
-        styles["modal-container"] + ` ${isMax && styles["modal-container-max"]}`
-      }
-    >
-      <div className={styles["modal-header"]}>
-        <div className={styles["modal-title"]}>{props.title}</div>
+  const handleClickOutside = (event: React.MouseEvent) => {
+    event.stopPropagation();
+  };
+  const handleMaskClick = (event: React.MouseEvent) => {
+    props.onClose?.();
+  };
 
-        <div className={styles["modal-header-actions"]}>
-          <div
-            className={styles["modal-header-action"]}
-            onClick={() => setMax(!isMax)}
-          >
-            {isMax ? <MinIcon /> : <MaxIcon />}
-          </div>
-          <div
-            className={styles["modal-header-action"]}
-            onClick={props.onClose}
-          >
-            <CloseIcon />
+  return (
+    <div className="modal-mask" onClick={handleMaskClick}>
+      <div
+        className={
+          styles["modal-container"] +
+          ` ${isMax && styles["modal-container-max"]}`
+        }
+        onClick={handleClickOutside}
+      >
+        <div className={styles["modal-header"]}>
+          <div className={styles["modal-title"]}>{props.title}</div>
+
+          <div className={styles["modal-header-actions"]}>
+            <div
+              className={styles["modal-header-action"]}
+              onClick={() => setMax(!isMax)}
+            >
+              {isMax ? <MinIcon /> : <MaxIcon />}
+            </div>
+            <div
+              className={styles["modal-header-action"]}
+              onClick={props.onClose}
+            >
+              <CloseIcon />
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className={styles["modal-content"]}>{props.children}</div>
+        <div className={styles["modal-content"]}>{props.children}</div>
 
-      <div className={styles["modal-footer"]}>
-        {props.footer}
-        <div className={styles["modal-actions"]}>
-          {props.actions?.map((action, i) => (
-            <div key={i} className={styles["modal-action"]}>
-              {action}
-            </div>
-          ))}
+        <div className={styles["modal-footer"]}>
+          {props.footer}
+          <div className={styles["modal-actions"]}>
+            {props.actions?.map((action, i) => (
+              <div key={i} className={styles["modal-action"]}>
+                {action}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

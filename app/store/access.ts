@@ -89,9 +89,11 @@ export const useAccessStore = createPersistStore(
           ...getHeaders(),
         },
       })
-        .then((res) => res.json())
+        .then((res) => {
+          return res.json();
+        })
         .then((res: DangerConfig) => {
-          console.log("[Config] got config from server", res);
+          console.log("[Config] got config from s1erver", res);
           set(() => ({ ...res }));
         })
         .catch(() => {

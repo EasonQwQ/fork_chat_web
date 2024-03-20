@@ -9,6 +9,7 @@ const serverConfig = getServerSideConfig();
 export default async function App() {
   return (
     <>
+      {/* <text>123</text> */}
       <Home />
       {serverConfig?.isVercel && (
         <>

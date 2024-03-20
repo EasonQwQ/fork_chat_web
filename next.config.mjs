@@ -85,6 +85,10 @@ if (mode !== "export") {
         source: "/sharegpt",
         destination: "https://sharegpt.com/api/conversations",
       },
+      {
+        source: "/aitht/:path*",
+        destination: "https://api.aitht.com/xwx/:path*",
+      },
     ];
 
     return {

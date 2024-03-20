@@ -8,12 +8,14 @@ export const getBuildConfig = () => {
   }
 
   const buildMode = process.env.BUILD_MODE ?? "standalone";
+  console.log("🚀 ~ getBuildConfig ~ buildMode:", buildMode);
   const isApp = !!process.env.BUILD_APP;
   const version = "v" + tauriConfig.package.version;
 
   const commitInfo = (() => {
     try {
       const childProcess = require("child_process");
+      console.log("🚀 ~ commitInfo ~ childProcess:", childProcess);
       const commitDate: string = childProcess
         .execSync('git log -1 --format="%at000" --date=unix')
         .toString()

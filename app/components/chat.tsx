@@ -97,6 +97,9 @@ import { ExportMessageModal } from "./exporter";
 import { getClientConfig } from "../config/client";
 import { useAllModels } from "../utils/hooks";
 import { MultimodalContent } from "../client/api";
+import { cosApiControllerGetUploadSign } from "../api/custom/route";
+import { nanoid } from "nanoid";
+import { transformOssUrlToCDN } from "../customUtils";
 
 const Markdown = dynamic(async () => (await import("./markdown")).Markdown, {
   loading: () => <LoadingIcon />,
@@ -109,60 +112,58 @@ export function SessionConfigModel(props: { onClose: () => void }) {
   const navigate = useNavigate();
 
   return (
-    <div className="modal-mask">
-      <Modal
-        title={Locale.Context.Edit}
-        onClose={() => props.onClose()}
-        actions={[
-          <IconButton
-            key="reset"
-            icon={<ResetIcon />}
-            bordered
-            text={Locale.Chat.Config.Reset}
-            onClick={async () => {
-              if (await showConfirm(Locale.Memory.ResetConfirm)) {
-                chatStore.updateCurrentSession(
-                  (session) => (session.memoryPrompt = ""),
-                );
-              }
-            }}
-          />,
-          <IconButton
-            key="copy"
-            icon={<CopyIcon />}
-            bordered
-            text={Locale.Chat.Config.SaveAs}
-            onClick={() => {
-              navigate(Path.Masks);
-              setTimeout(() => {
-                maskStore.create(session.mask);
-              }, 500);
-            }}
-          />,
-        ]}
-      >
-        <MaskConfig
-          mask={session.mask}
-          updateMask={(updater) => {
-            const mask = { ...session.mask };
-            updater(mask);
-            chatStore.updateCurrentSession((session) => (session.mask = mask));
+    <Modal
+      title={Locale.Context.Edit}
+      onClose={() => props.onClose()}
+      actions={[
+        <IconButton
+          key="reset"
+          icon={<ResetIcon />}
+          bordered
+          text={Locale.Chat.Config.Reset}
+          onClick={async () => {
+            if (await showConfirm(Locale.Memory.ResetConfirm)) {
+              chatStore.updateCurrentSession(
+                (session) => (session.memoryPrompt = ""),
+              );
+            }
           }}
-          shouldSyncFromGlobal
-          extraListItems={
-            session.mask.modelConfig.sendMemory ? (
-              <ListItem
-                className="copyable"
-                title={`${Locale.Memory.Title} (${session.lastSummarizeIndex} of ${session.messages.length})`}
-                subTitle={session.memoryPrompt || Locale.Memory.EmptyContent}
-              ></ListItem>
-            ) : (
-              <></>
-            )
-          }
-        ></MaskConfig>
-      </Modal>
-    </div>
+        />,
+        <IconButton
+          key="copy"
+          icon={<CopyIcon />}
+          bordered
+          text={Locale.Chat.Config.SaveAs}
+          onClick={() => {
+            navigate(Path.Masks);
+            setTimeout(() => {
+              maskStore.create(session.mask);
+            }, 500);
+          }}
+        />,
+      ]}
+    >
+      <MaskConfig
+        mask={session.mask}
+        updateMask={(updater) => {
+          const mask = { ...session.mask };
+          updater(mask);
+          chatStore.updateCurrentSession((session) => (session.mask = mask));
+        }}
+        shouldSyncFromGlobal
+        extraListItems={
+          session.mask.modelConfig.sendMemory ? (
+            <ListItem
+              className="copyable"
+              title={`${Locale.Memory.Title} (${session.lastSummarizeIndex} of ${session.messages.length})`}
+              subTitle={session.memoryPrompt || Locale.Memory.EmptyContent}
+            ></ListItem>
+          ) : (
+            <></>
+          )
+        }
+      ></MaskConfig>
+    </Modal>
   );
 }
 
@@ -1100,11 +1101,13 @@ function _Chat() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
+
   const handlePaste = useCallback(
     async (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
       const currentModel = chatStore.currentSession().mask.modelConfig.model;
-      if(!isVisionModel(currentModel)){return;}
+      if (!isVisionModel(currentModel)) {
+        return;
+      }
       const items = (event.clipboardData || window.clipboardData).items;
       for (const item of items) {
         if (item.kind === "file" && item.type.startsWith("image/")) {
@@ -1153,27 +1156,55 @@ function _Chat() {
         fileInput.accept =
           "image/png, image/jpeg, image/webp, image/heic, image/heif";
         fileInput.multiple = true;
-        fileInput.onchange = (event: any) => {
+        fileInput.onchange = async (event: any) => {
           setUploading(true);
           const files = event.target.files;
           const imagesData: string[] = [];
           for (let i = 0; i < files.length; i++) {
             const file = event.target.files[i];
-            compressImage(file, 256 * 1024)
-              .then((dataUrl) => {
-                imagesData.push(dataUrl);
-                if (
-                  imagesData.length === 3 ||
-                  imagesData.length === files.length
-                ) {
-                  setUploading(false);
-                  res(imagesData);
-                }
-              })
-              .catch((e) => {
-                setUploading(false);
-                rej(e);
+            console.log("🚀 ~ fileInput.onchange= ~ file:", file);
+
+            try {
+              const response = await cosApiControllerGetUploadSign({
+                fileName: nanoid(10),
               });
+              console.log("🚀 ~ fileInput.onchange= ~ response:", response);
+
+              const uploadUrl = response.Url;
+              if (!uploadUrl) {
+                console.log("Upload URL is not available");
+                return;
+              }
+              const xhr = new XMLHttpRequest();
+              xhr.open("PUT", uploadUrl, true);
+              xhr.onload = function (data) {
+                if (xhr.status === 200) {
+                  console.log("Upload success");
+                  const imageUrl = transformOssUrlToCDN(
+                    uploadUrl?.split("?")[0],
+                  );
+                  console.log("🚀 ~ beforeUpload: ~ data:", imageUrl);
+                  imagesData.push(imageUrl);
+                  if (
+                    imagesData.length === 3 ||
+                    imagesData.length === files.length
+                  ) {
+                    setUploading(false);
+                    res(imagesData);
+                  }
+                } else {
+                  console.log("Upload failed");
+                }
+              };
+              xhr.onerror = function (err) {
+                console.log("🚀 ~ .then ~ err:", err);
+              };
+              xhr.send(file);
+            } catch (err) {
+              console.log("Error getting upload URL:", err);
+              setUploading(false);
+              rej(err);
+            }
           }
         };
         fileInput.click();
@@ -1184,6 +1215,8 @@ function _Chat() {
     if (imagesLength > 3) {
       images.splice(3, imagesLength - 3);
     }
+    console.log("🚀 ~ uploadImage ~ images:", images);
+
     setAttachImages(images);
   }
 
