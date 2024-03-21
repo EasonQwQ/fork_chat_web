@@ -297,3 +297,8 @@ export function isVisionModel(model: string) {
     model.startsWith("yi-vl-plus") || model.includes("vision")
   );
 }
+/** 判断是否是零一万物的模型 */
+export function isZeroOneModel(model: string) {
+  const models = ["yi-34b-chat-0205", "yi-34b-chat-200k", "yi-vl-plus"];
+  return models.includes(model);
+}

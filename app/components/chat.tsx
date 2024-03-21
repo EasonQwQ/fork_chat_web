@@ -1162,14 +1162,10 @@ function _Chat() {
           const imagesData: string[] = [];
           for (let i = 0; i < files.length; i++) {
             const file = event.target.files[i];
-            console.log("🚀 ~ fileInput.onchange= ~ file:", file);
-
             try {
               const response = await cosApiControllerGetUploadSign({
                 fileName: nanoid(10),
               });
-              console.log("🚀 ~ fileInput.onchange= ~ response:", response);
-
               const uploadUrl = response.Url;
               if (!uploadUrl) {
                 console.log("Upload URL is not available");
@@ -1196,9 +1192,7 @@ function _Chat() {
                   console.log("Upload failed");
                 }
               };
-              xhr.onerror = function (err) {
-                console.log("🚀 ~ .then ~ err:", err);
-              };
+              xhr.onerror = function (err) {};
               xhr.send(file);
             } catch (err) {
               console.log("Error getting upload URL:", err);
@@ -1215,8 +1209,6 @@ function _Chat() {
     if (imagesLength > 3) {
       images.splice(3, imagesLength - 3);
     }
-    console.log("🚀 ~ uploadImage ~ images:", images);
-
     setAttachImages(images);
   }
 

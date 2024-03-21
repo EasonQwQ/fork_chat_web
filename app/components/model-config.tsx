@@ -78,16 +78,12 @@ export function ModelConfigList(props: {
       >
         <input
           type="number"
-          min={1024}
           max={512000}
           value={props.modelConfig.max_tokens}
           onChange={(e) => {
-            props.updateConfig(
-              (config) =>
-                (config.max_tokens = ModalConfigValidator.max_tokens(
-                  e.currentTarget.valueAsNumber,
-                )),
-            );
+            props.updateConfig((config) => {
+              return (config.max_tokens = e.currentTarget.valueAsNumber);
+            });
           }}
           onBlur={(e) => {
             if (

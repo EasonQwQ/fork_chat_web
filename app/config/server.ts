@@ -40,6 +40,8 @@ declare global {
       CDN_URL: string;
       /** custom base url */
       CUSTOM_BASE_URL: string;
+      /** only lingyi model */
+      LINGYI_ONLY?: string;
     }
   }
 }
@@ -116,5 +118,6 @@ export const getServerSideConfig = () => {
     cdnOrigin: process.env.CDN_ORIGIN,
     cdnUrl: process.env.CDN_URL,
     customBaseURL: process.env.CUSTOM_BASE_URL,
+    lingyiOnly: !!process.env.LINGYI_ONLY,
   };
 };

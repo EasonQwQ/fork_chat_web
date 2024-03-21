@@ -27,8 +27,8 @@ import { getClientConfig } from "@/app/config/client";
 import { makeAzurePath } from "@/app/azure";
 import {
   getMessageTextContent,
-  getMessageImages,
   isVisionModel,
+  isZeroOneModel,
 } from "@/app/utils";
 
 export interface OpenAIListModelResponse {
@@ -106,7 +106,7 @@ export class ChatGPTApi implements LLMApi {
       presence_penalty: modelConfig.presence_penalty,
       frequency_penalty: modelConfig.frequency_penalty,
       top_p: modelConfig.top_p,
-      // max_tokens: Math.max(modelConfig.max_tokens, 1024),
+      max_tokens: Math.max(modelConfig.max_tokens, 1024),
       // Please do not ask me why not send max_tokens, no reason, this param is just shit, I dont want to explain anymore.
     };
 
@@ -117,6 +117,14 @@ export class ChatGPTApi implements LLMApi {
         configurable: true,
         writable: true,
         value: modelConfig.max_tokens,
+      });
+    }
+    if (isZeroOneModel(options.config.model)) {
+      requestPayload.messages = messages.map((v) => {
+        return {
+          ...v,
+          role: v.role === "assistant" ? "system" : v.role,
+        };
       });
     }
 
