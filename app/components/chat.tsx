@@ -441,8 +441,9 @@ export function ChatActions(props: {
   }
 
   // stop all responses
-  const couldStop = ChatControllerPool.hasPending();
-  const stopAll = () => ChatControllerPool.stopAll();
+  // const couldStop = ChatControllerPool.getInstance().hasPending();
+  // const stopAll = ;
+  const pool = ChatControllerPool.getInstance();
 
   // switch model
   const currentModel = chatStore.currentSession().mask.modelConfig.model;
@@ -476,9 +477,13 @@ export function ChatActions(props: {
 
   return (
     <div className={styles["chat-input-actions"]}>
-      {couldStop && (
+      {ChatControllerPool.getInstance().hasPending() && (
         <ChatAction
-          onClick={stopAll}
+          onClick={() => {
+            console.log("🚀 ~ pool.controllers:", pool.controllers);
+
+            pool.stopAll();
+          }}
           text={Locale.Chat.InputActions.Stop}
           icon={<StopIcon />}
         />

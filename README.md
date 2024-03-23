@@ -28,6 +28,8 @@ To get started with the project, follow these steps:
    OPENAI_API_KEY=<your-lingyi-api-key>
    CUSTOM_MODELS=+yi-34b-chat-0205,+yi-34b-chat-200k,+yi-vl-plus
    BASE_URL=https://api.lingyiwanwu.com 
+   # only display lingyi models
+   LINGYI_ONLY=true
    ```
 
    Note: The `OPENAI_API_KEY` should be replaced with your actual API key from the Lingyi platform, which you can obtain by visiting their [open platform](https://platform.lingyiwanwu.com/).

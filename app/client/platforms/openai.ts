@@ -158,7 +158,16 @@ export class ChatGPTApi implements LLMApi {
         function animateResponseText() {
           if (finished || controller.signal.aborted) {
             responseText += remainText;
-            console.log("[Response Animation] finished");
+            console.log(
+              "[Response Animation] finished",
+              finished,
+              responseText.length,
+            );
+            if (responseText.length === 0) {
+              options.onError?.(
+                new Error("Failed to get response from OpenAI"),
+              );
+            }
             return;
           }
 
@@ -167,6 +176,10 @@ export class ChatGPTApi implements LLMApi {
             const fetchText = remainText.slice(0, fetchCount);
             responseText += fetchText;
             remainText = remainText.slice(fetchCount);
+            console.log(
+              "🚀 ~ ChatGPTApi ~ animateResponseText ~ remainText:",
+              remainText,
+            );
             options.onUpdate?.(responseText, fetchText);
           }
 
